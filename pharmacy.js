@@ -21,6 +21,9 @@ const drugSpecificitiesMap = {
     getNextExpireIn: (drug) => drug.expiresIn, // never expire
     getNextBenefit: (drug) => drug.benefit, // don't degrade
   },
+  Dafalgan: {
+    getNextBenefit: (drug) => defaultGetNextBenefit(drug, 2),
+  },
 };
 
 export class Drug {
@@ -36,56 +39,38 @@ export class Pharmacy {
     this.drugs = drugs;
   }
   updateBenefitValue() {
-    for (var i = 0; i < this.drugs.length; i++) {
-      if (
-        this.drugs[i].name != "Herbal Tea" &&
-        this.drugs[i].name != "Fervex"
-      ) {
-        if (this.drugs[i].benefit > 0) {
-          if (this.drugs[i].name != "Magic Pill") {
-            this.drugs[i].benefit = this.drugs[i].benefit - 1;
-          }
-        }
-      } else {
-        if (this.drugs[i].benefit < 50) {
-          this.drugs[i].benefit = this.drugs[i].benefit + 1;
-          if (this.drugs[i].name == "Fervex") {
-            if (this.drugs[i].expiresIn < 11) {
-              if (this.drugs[i].benefit < 50) {
-                this.drugs[i].benefit = this.drugs[i].benefit + 1;
-              }
-            }
-            if (this.drugs[i].expiresIn < 6) {
-              if (this.drugs[i].benefit < 50) {
-                this.drugs[i].benefit = this.drugs[i].benefit + 1;
-              }
-            }
-          }
-        }
-      }
-      if (this.drugs[i].name != "Magic Pill") {
-        this.drugs[i].expiresIn = this.drugs[i].expiresIn - 1;
-      }
-      if (this.drugs[i].expiresIn < 0) {
-        if (this.drugs[i].name != "Herbal Tea") {
-          if (this.drugs[i].name != "Fervex") {
-            if (this.drugs[i].benefit > 0) {
-              if (this.drugs[i].name != "Magic Pill") {
-                this.drugs[i].benefit = this.drugs[i].benefit - 1;
-              }
-            }
-          } else {
-            this.drugs[i].benefit =
-              this.drugs[i].benefit - this.drugs[i].benefit;
-          }
-        } else {
-          if (this.drugs[i].benefit < 50) {
-            this.drugs[i].benefit = this.drugs[i].benefit + 1;
-          }
-        }
-      }
-    }
+    for (const [i, drug] of this.drugs.entries()) {
+      // compute the new values
+      let nextBenefit = defaultGetNextBenefit(drug, 1);
+      let nextExpiresIn = defaultGetNextExpiresIn(drug);
 
+      const specificities = drugSpecificitiesMap[drug.name];
+      if (specificities) {
+        if (specificities.getNextBenefit) {
+          nextBenefit = specificities.getNextBenefit(drug);
+        }
+        if (specificities.getNextExpireIn) {
+          nextExpiresIn = specificities.getNextExpireIn(drug);
+        }
+      }
+
+      // update the values
+      this.drugs[i].expiresIn = nextExpiresIn;
+      this.drugs[i].benefit = limitBenefitToRange(nextBenefit);
+    }
     return this.drugs;
   }
 }
+
+const defaultGetNextBenefit = (drug, dailyDegradation = 1) => {
+  if (drug.expiresIn > 0) return drug.benefit - dailyDegradation;
+  return drug.benefit - dailyDegradation * 2;
+};
+
+const defaultGetNextExpiresIn = (drug) => drug.expiresIn - 1;
+
+const limitBenefitToRange = (benefit) => {
+  if (benefit >= 50) return 50;
+  if (benefit <= 0) return 0;
+  return benefit;
+};
