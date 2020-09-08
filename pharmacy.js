@@ -1,7 +1,6 @@
 const drugSpecificitiesMap = {
   "Herbal Tea": {
-    getNextBenefit: (drug) =>
-      drug.expiresIn <= 0 ? drug.benefit + 2 : drug.benefit + 1, // get better with time, twice if expired
+    getNextBenefit: (drug) => defaultGetNextBenefit(drug, -1), // get better with time, twice if expired
   },
   Fervex: {
     getNextBenefit: (drug) => {
