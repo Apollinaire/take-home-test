@@ -1,11 +1,11 @@
-const drugSpecs = {
+const drugSpecificitiesMap = {
   "Herbal Tea": {
-    nextBenefit: (drug) =>
+    getNextBenefit: (drug) =>
       drug.expiresIn <= 0 ? drug.benefit + 2 : drug.benefit + 1, // get better with time, twice if expired
   },
   Fervex: {
-    nextBenefit: (drug) => {
-      const { expiresIn } = drug;
+    getNextBenefit: (drug) => {
+      const { expiresIn, benefit } = drug;
       if (expiresIn <= 0) {
         return 0;
       }
@@ -18,8 +18,8 @@ const drugSpecs = {
     },
   },
   "Magic Pill": {
-    nextExpireIn: (drug) => drug.expiresIn, // never expire
-    nextBenefit: (drug) => drug.nextBenefit, // never lose benefit
+    getNextExpireIn: (drug) => drug.expiresIn, // never expire
+    getNextBenefit: (drug) => drug.benefit, // don't degrade
   },
 };
 
