@@ -1,3 +1,28 @@
+const drugSpecs = {
+  "Herbal Tea": {
+    nextBenefit: (drug) =>
+      drug.expiresIn <= 0 ? drug.benefit + 2 : drug.benefit + 1, // get better with time, twice if expired
+  },
+  Fervex: {
+    nextBenefit: (drug) => {
+      const { expiresIn } = drug;
+      if (expiresIn <= 0) {
+        return 0;
+      }
+      if (expiresIn <= 5) {
+        return benefit + 3;
+      }
+      if (expiresIn <= 10) {
+        return benefit + 2;
+      }
+    },
+  },
+  "Magic Pill": {
+    nextExpireIn: (drug) => drug.expiresIn, // never expire
+    nextBenefit: (drug) => drug.nextBenefit, // never lose benefit
+  },
+};
+
 export class Drug {
   constructor(name, expiresIn, benefit) {
     this.name = name;
